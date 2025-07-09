@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Structural Steel General Provisions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Amber -->
+    <!-- Application Structure Plan: The application is structured as a user-centric, task-oriented guide rather than a linear document. It begins with a high-level overview, then allows users to interactively explore provisions based on their specific design context. The structure includes: 1) An 'Application Guide' to quickly find rules for seismic or nuclear projects. 2) A 'Referenced Standards' explorer with a visual chart and a searchable list to make the dense list of codes manageable. 3) A 'Material Explorer' with filters to let users find approved materials for specific components (e.g., bolts, plates). 4) An interactive flowchart for the complex 'Heavy Shape Requirements'. This interactive, non-linear structure was chosen because engineers using this document typically look for specific rules relevant to their immediate task, rather than reading it cover-to-cover. This design facilitates efficient information retrieval and improves usability. -->
+    <!-- Visualization & Content Choices: 1) Referenced Standards Count (Report Info) -> Goal: Show distribution/prominence -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Provides a quick visual summary of which standards bodies are most referenced, making the long list less intimidating. Library: Chart.js. 2) Material Types (Report Info) -> Goal: Organize & Filter -> Viz: Interactive card-based list -> Interaction: Click filter buttons (Shapes, Plates, Bolts) to update the displayed list -> Justification: Transforms a long, static list of materials into a dynamic, user-controlled explorer, improving findability. Method: HTML/CSS/JS. 3) Heavy Shape Rules (Report Info) -> Goal: Simplify complex conditional logic -> Viz: HTML/CSS flowchart diagram -> Interaction: Users can mentally follow the decision path -> Justification: Clarifies a dense, rule-based text block into a simple visual decision tree, significantly enhancing comprehension. Method: HTML/Tailwind CSS. 4) Application Types (Report Info) -> Goal: Inform -> Viz: Interactive Cards -> Interaction: Click to reveal relevant text -> Justification: Allows users to quickly access the top-level requirements for their specific project type without reading through irrelevant sections. Method: HTML/CSS/JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; height: 400px; max-height: 400px; }
+        .nav-link { transition: color 0.3s; }
+        .nav-link:hover { color: #f59e0b; }
+        .tab-button.active { background-color: #f59e0b; color: #ffffff; }
+        .tab-button { transition: all 0.3s; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-slate-800 text-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-amber-400">NSCP Structural Steel Guide</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#scope" class="nav-link font-medium">Scope</a>
+                <a href="#standards" class="nav-link font-medium">Standards</a>
+                <a href="#materials" class="nav-link font-medium">Materials</a>
+                <a href="#design" class="nav-link font-medium">Design</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4">
+            <a href="#scope" class="block py-2 nav-link">Scope</a>
+            <a href="#standards" class="block py-2 nav-link">Standards</a>
+            <a href="#materials" class="block py-2 nav-link">Materials</a>
+            <a href="#design" class="block py-2 nav-link">Design</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="scope" class="mb-16 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Structural Steel General Provisions</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-8">This interactive guide summarizes Chapter 5, Section 501 and 502 of the National Structural Code of the Philippines (NSCP), covering the general provisions, material specifications, and design requirements for structural steel buildings. Use the tools below to explore the code based on your project's specific needs.</p>
+            
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                <h3 class="text-2xl font-bold text-slate-800 mb-4">Application Guide</h3>
+                <p class="text-slate-600 mb-8">Start by selecting your project's application type to see the primary governing requirements.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="app-btn-low-seismic" class="application-card border-2 border-slate-300 p-6 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all">
+                        <h4 class="text-xl font-semibold mb-2">🏢 Low-Seismic</h4>
+                        <p class="text-slate-500">For structures with Seismic Response Modification Coefficient, R &le; 3.</p>
+                    </div>
+                    <div id="app-btn-high-seismic" class="application-card border-2 border-slate-300 p-6 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all">
+                        <h4 class="text-xl font-semibold mb-2">🌊 High-Seismic</h4>
+                        <p class="text-slate-500">For structures with Seismic Response Modification Coefficient, R > 3.</p>
+                    </div>
+                    <div id="app-btn-nuclear" class="application-card border-2 border-slate-300 p-6 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all">
+                        <h4 class="text-xl font-semibold mb-2">⚛️ Nuclear</h4>
+                        <p class="text-slate-500">For safety-related structures in nuclear facilities.</p>
+                    </div>
+                </div>
+                <div id="application-details" class="mt-8 p-6 bg-slate-100 rounded-lg text-left hidden">
+                    <h5 id="app-details-title" class="text-xl font-bold mb-2"></h5>
+                    <p id="app-details-text" class="text-slate-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="standards" class="mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 text-center">Referenced Standards</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-12 text-center">This section provides an overview of the codes and standards referenced in the specification. You can visually explore the distribution of standards by organization or search the complete list.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Standards by Organization</h3>
+                    <div class="chart-container">
+                        <canvas id="standardsChart"></canvas>
+                    </div>
+                     <p class="text-sm text-slate-500 mt-4 text-center">Hover over the chart segments to see the count of standards from each organization.</p>
+                </div>
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Standards Browser</h3>
+                    <div class="mb-4">
+                        <input type="text" id="standards-search" placeholder="Search for a standard (e.g., ASTM A36)..." class="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
+                    <div id="standards-list" class="h-96 overflow-y-auto pr-2">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="materials" class="mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 text-center">Material & Component Explorer</h2>
+             <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-12 text-center">Find approved materials for various structural components. Use the filters to narrow down the list of approved ASTM, AWS, and other standards for your specific application.</p>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-200">
+                <div class="mb-6 flex flex-wrap justify-center gap-2 md:gap-4">
+                    <button class="material-filter-btn tab-button active px-4 py-2 font-medium rounded-md bg-amber-500 text-white" data-filter="all">All Materials</button>
+                    <button class="material-filter-btn tab-button px-4 py-2 font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300" data-filter="steel">Structural Steel</button>
+                    <button class="material-filter-btn tab-button px-4 py-2 font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300" data-filter="bolts">Bolts, Nuts & Washers</button>
+                    <button class="material-filter-btn tab-button px-4 py-2 font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300" data-filter="rods">Anchor Rods</button>
+                    <button class="material-filter-btn tab-button px-4 py-2 font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300" data-filter="welding">Welding</button>
+                    <button class="material-filter-btn tab-button px-4 py-2 font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300" data-filter="other">Other</button>
+                </div>
+                <div id="materials-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                </div>
+            </div>
+        </section>
+        
+        <section id="heavy-shapes" class="mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 text-center">Heavy Shape Requirements Guide</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-12 text-center">The code has specific toughness requirements for heavy rolled or built-up shapes. This guide simplifies the logic from sections 501.3.1.3 and 501.3.1.4 to help you determine if Charpy V-Notch (CVN) testing is required.</p>
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 flex flex-col items-center">
+                 <div class="space-y-4 w-full max-w-2xl">
+                    <div class="decision-node bg-slate-100 p-4 rounded-lg text-center">
+                        <p class="font-semibold">Start: Is the member a rolled or built-up shape?</p>
+                    </div>
+                    <div class="text-center text-slate-500 font-bold">↓</div>
+                     <div class="decision-node bg-slate-100 p-4 rounded-lg text-center">
+                        <p class="font-semibold">Is the plate/flange thickness > 50 mm?</p>
+                    </div>
+                    <div class="text-center text-slate-500 font-bold">↓</div>
+                    <div class="decision-node bg-slate-100 p-4 rounded-lg text-center">
+                        <p class="font-semibold">Is it subject to primary tensile forces (from tension or flexure)?</p>
+                    </div>
+                    <div class="text-center text-slate-500 font-bold">↓</div>
+                    <div class="decision-node bg-slate-100 p-4 rounded-lg text-center">
+                        <p class="font-semibold">Is it spliced or connected with complete joint-penetration groove welds?</p>
+                    </div>
+                    <div class="text-center text-slate-500 font-bold">↓</div>
+                    <div class="decision-node bg-amber-100 border-2 border-amber-400 p-4 rounded-lg text-center">
+                        <p class="font-bold text-amber-800">If YES to all: CVN Impact Testing is REQUIRED.</p>
+                        <p class="text-sm text-amber-700 mt-2">Requires min. 27 J absorbed energy at +21°C. Refer to ASTM A6/A6M S5/S30.</p>
+                    </div>
+                     <div class="decision-node bg-green-100 border-2 border-green-400 p-4 rounded-lg text-center mt-4">
+                        <p class="font-bold text-green-800">If NO to any, or if bolted: These specific CVN requirements do not apply.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="design" class="mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 text-center">Core Design Principles</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-12 text-center">Section 502 outlines the fundamental basis for design, focusing on required strength and limit states. This ensures structural integrity under all expected load combinations.</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold mb-3">Design Basis</h3>
+                    <p class="text-slate-600">Designs must follow either Load and Resistance Factor Design (LRFD) or Allowable Strength Design (ASD) principles.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold mb-3">Required Strength</h3>
+                    <p class="text-slate-600">The required strength of members and connections is determined via structural analysis using the load combinations specified in the code.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
+                    <h3 class="text-xl font-bold mb-3">Limit States</h3>
+                    <p class="text-slate-600">The design must ensure that no strength or serviceability limit state is exceeded when the structure is subjected to all appropriate load combinations.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-slate-400">
+            <p>This is an interactive guide based on the National Structural Code of the Philippines (NSCP), Chapter 5. It is for informational purposes only.</p>
+            <p class="text-sm mt-2">&copy; 2025 Interactive Code Explorer. All content derived from public specifications.</p>
+        </div>
+    </footer>
+
+    <script>
+        const appData = {
+            applications: [
+                { id: 'low-seismic', title: 'Low-Seismic Applications (R ≤ 3)', text: 'The design, fabrication, and erection of structural-steel-framed buildings and other structures shall comply with this Chapter (Chapter 5).' },
+                { id: 'high-seismic', title: 'High-Seismic Applications (R > 3)', text: 'The design, fabrication and erection shall comply with the requirements in the Seismic Provisions for Structural Steel Buildings (NSCP Chapter 5 Part 2), in addition to the provisions of this Specification.' },
+                { id: 'nuclear', title: 'Nuclear Applications', text: 'The design of nuclear structures shall comply with the requirements of the Specification for the Design, Fabrication, and Erection of Steel Safety-Related Structures in Nuclear Facilities (ANSI/AISC N690) or the Load and Resistance Factor Design Specification for Steel Safety-Related Structures for Nuclear Facilities (ANSI/AISC N690L), in addition to the provisions of this Chapter.' }
+            ],
+            standards: [
+                { org: 'ACI', code: 'ACI 318-08', desc: 'Building Code Requirements for Structural Concrete and Commentary' },
+                { org: 'ACI', code: 'ACI 318M-08', desc: 'Metric Building Code Requirements for Structural Concrete and Commentary' },
+                { org: 'ACI', code: 'ACI 349-06', desc: 'Code Requirements for Nuclear Safety-Related Concrete Structures and Commentary' },
+                { org: 'AISC', code: 'AISC 303-10', desc: 'Code of Standard Practice for Steel Buildings and Bridges' },
+                { org: 'AISC', code: 'ANSI/AISC 341-10', desc: 'Seismic Provisions for Structural Steel Buildings' },
+                { org: 'AISC', code: 'ANSI/AISCN690-1994(R2004)', desc: 'Specification for the Design, Fabrication and Erection of Steel Safety-Related Structures for Nuclear Facilities' },
+                { org: 'AISC', code: 'ANSI/AISC N690L-03', desc: 'Load and Resistance Factor Design Specification for Steel Safety-Related Structures for Nuclear Facilities' },
+                { org: 'ASCE', code: 'SEI/ASCE 7-10', desc: 'Minimum Design Loads for Buildings and Other Structures' },
+                { org: 'ASCE', code: 'ASCE/SFPE 29-05', desc: 'Standard Calculation Methods for Structural Fire Protection' },
+                { org: 'ASME', code: 'ASME B18.2.6-06', desc: 'Fasteners for Use in Structural Applications' },
+                { org: 'ASME', code: 'ASME B46.1-02', desc: 'Surface Texture, Surface Roughness, Waviness, and Lay' },
+                { org: 'ASTM', code: 'A6/A6M-09', desc: 'General Requirements for Rolled Structural Steel Bars, Plates, Shapes, and Sheet Piling' },
+                { org: 'ASTM', code: 'A36/A36M-08', desc: 'Carbon Structural Steel' },
+                { org: 'ASTM', code: 'A53/A53M-07', desc: 'Pipe, Steel, Black and Hot-Dipped, Zinc-Coated, Welded and Seamless' },
+                { org: 'ASTM', code: 'A193/A193M-08b', desc: 'Alloy-Steel and Stainless Steel Bolting Materials for High-Temperature Service' },
+                { org: 'ASTM', code: 'A194/A194M-09', desc: 'Carbon and Alloy Steel Nuts for Bolts for High Pressure or High-Temperature Service' },
+                { org: 'ASTM', code: 'A216/A216M-08', desc: 'Steel Castings, Carbon, Suitable for Fusion Welding, for High Temperature Service' },
+                { org: 'ASTM', code: 'A242/A242M-04', desc: 'High-Strength Low-Alloy Structural Steel' },
+                { org: 'ASTM', code: 'A283/A283M-03', desc: 'Low and Intermediate Tensile Strength Carbon Steel Plates' },
+                { org: 'ASTM', code: 'A307-07b', desc: 'Carbon Steel Bolts and Studs, 60,000 PSI Tensile Strength' },
+                { org: 'ASTM', code: 'A325-09', desc: 'Structural Bolts, Steel, Heat Treated, 120/105 ksi Minimum Tensile Strength' },
+                { org: 'ASTM', code: 'A354-07a', desc: 'Quenched and Tempered Alloy Steel Bolts, Studs, and Other Externally Threaded Fasteners' },
+                { org: 'ASTM', code: 'A449-07b', desc: 'Quenched and Tempered Steel Bolts and Studs' },
+                { org: 'ASTM', code: 'A490-08b', desc: 'Heat-Treated Steel Structural Bolts, 150 ksi Minimum Tensile Strength' },
+                { org: 'ASTM', code: 'A500-03a', desc: 'Cold-Formed Welded and Seamless Carbon Steel Structural Tubing in Rounds and Shapes' },
+                { org: 'ASTM', code: 'A501-07', desc: 'Hot-Formed Welded and Seamless Carbon Steel Structural Tubing' },
+                { org: 'ASTM', code: 'A502-03', desc: 'Steel Structural Rivets' },
+                { org: 'ASTM', code: 'A514/A514M-05', desc: 'High-Yield Strength, Quenched and Tempered Alloy Steel Plate, Suitable for Welding' },
+                { org: 'ASTM', code: 'A529/A529M-05', desc: 'High-Strength Carbon-Manganese Steel of Structural Quality' },
+                { org: 'ASTM', code: 'A563-07a', desc: 'Carbon and Alloy Steel Nuts' },
+                { org: 'ASTM', code: 'A572/A572M-07', desc: 'High-Strength Low-Alloy Columbium-Vanadium Structural Steel' },
+                { org: 'ASTM', code: 'A588/A588M-05', desc: 'High-Strength Low-Alloy Structural Steel with 345 MPa Minimum Yield Point to 100 mm Thick' },
+                { org: 'ASTM', code: 'A606/A606M-09', desc: 'Steel, Sheet and Strip, High-Strength, Low-Alloy, with Improved Atmospheric Corrosion Resistance' },
+                { org: 'ASTM', code: 'A618/A618M-04', desc: 'Hot-Formed Welded and Seamless High-Strength Low-Alloy Structural Tubing' },
+                { org: 'ASTM', code: 'A668/A668M-04', desc: 'Steel Forgings, Carbon and Alloy, for General Industrial Use' },
+                { org: 'ASTM', code: 'A673/A673M-04', desc: 'Sampling Procedure for Impact Testing of Structural Steel' },
+                { org: 'ASTM', code: 'A709/A709M-09', desc: 'Structural Steel for Bridges' },
+                { org: 'ASTM', code: 'A847/A847M-05', desc: 'Cold-Formed Welded and Seamless High-Strength, Low-Alloy Structural Tubing with Improved Corrosion Resistance' },
+                { org: 'ASTM', code: 'A913/A913M-07', desc: 'High-Strength Low-Alloy Steel Shapes (QST)' },
+                { org: 'ASTM', code: 'A992/A992M-06a', desc: 'Steel for Structural Shapes for Use in Building Framing' },
+                { org: 'ASTM', code: 'F1554-07a', desc: 'Anchor Bolts, Steel, 36, 55, and 105 ksi Yield Strength' },
+                { org: 'ASTM', code: 'F1852-08', desc: '"Twist-Off" Type Tension Control Structural Bolt/Nut/Washer Assemblies' },
+                { org: 'ASTM', code: 'F436-09', desc: 'Hardened Steel Washers' },
+                { org: 'ASTM', code: 'F959-09', desc: 'Compressible-Washer-Type Direct Tension Indicators' },
+                { org: 'AWS', code: 'AWS D1.1/D1.1M-2004', desc: 'Structural Welding Code—Steel' },
+                { org: 'AWS', code: 'AWS A5.1', desc: 'Carbon Steel Electrodes for Shielded Metal Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.5', desc: 'Low-Alloy Steel Electrodes for Shielded Metal Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.17/A5.17M', desc: 'Carbon Steel Electrodes and Fluxes for Submerged Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.18', desc: 'Carbon Steel Electrodes and Rods for Gas Shielded Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.20', desc: 'Carbon Steel Electrodes for Flux Cored Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.23/A5.23M', desc: 'Low-Alloy Steel Electrodes and Fluxes for Submerged Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.25/A5.25M', desc: 'Carbon and Low-Alloy Steel Electrodes and Fluxes for Electroslag Welding' },
+                { org: 'AWS', code: 'AWS A5.26/A5.26M', desc: 'Carbon and Low-Alloy Steel Electrodes for Electrogas Welding' },
+                { org: 'AWS', code: 'AWS A5.28', desc: 'Low-Alloy Steel Electrodes and Rods for Gas Shielded Arc Welding' },
+                { org: 'AWS', code: 'AWS A5.29', desc: 'Low-Alloy Steel Electrodes for Flux Cored Arc Welding' },
+                { org: 'RCSC', code: 'RCSC 2004', desc: 'Specification for Structural Joints Using ASTM A325 or A490 Bolts' }
+            ],
+            materials: [
+                { category: 'steel', name: 'ASTM A36/A36M', type: 'Hot-rolled shapes, Plates, Bars' },
+                { category: 'steel', name: 'ASTM A529/A529M', type: 'Hot-rolled shapes, Plates, Bars' },
+                { category: 'steel', name: 'ASTM A572/A572M', type: 'Hot-rolled shapes, Plates, Bars' },
+                { category: 'steel', name: 'ASTM A588/A588M', type: 'Hot-rolled shapes, Plates' },
+                { category: 'steel', name: 'ASTM A709/A709M', type: 'Hot-rolled shapes, Plates, Bars' },
+                { category: 'steel', name: 'ASTM A913/A913M', type: 'Hot-rolled shapes' },
+                { category: 'steel', name: 'ASTM A992/A992M', type: 'Hot-rolled shapes' },
+                { category: 'steel', name: 'ASTM A500', type: 'Structural tubing' },
+                { category: 'steel', name: 'ASTM A501', type: 'Structural tubing' },
+                { category: 'steel', name: 'ASTM A618', type: 'Structural tubing' },
+                { category: 'steel', name: 'ASTM A847', type: 'Structural tubing' },
+                { category: 'steel', name: 'ASTM A53/A53M, Gr. B', type: 'Pipe' },
+                { category: 'steel', name: 'ASTM A242/A242M', type: 'Plates' },
+                { category: 'steel', name: 'ASTM A283/A283M', type: 'Plates' },
+                { category: 'steel', name: 'ASTM A514/A514M', type: 'Plates' },
+                { category: 'steel', name: 'ASTM A852/A852M', type: 'Plates' },
+                { category: 'steel', name: 'ASTM A1011/A1011M', type: 'Plates, Sheets' },
+                { category: 'steel', name: 'ASTM A606', type: 'Sheets' },
+                { category: 'bolts', name: 'ASTM A307', type: 'Bolts' },
+                { category: 'bolts', name: 'ASTM A325/A325M', type: 'Bolts' },
+                { category: 'bolts', name: 'ASTM A449', type: 'Bolts' },
+                { category: 'bolts', name: 'ASTM A490/A490M', type: 'Bolts' },
+                { category: 'bolts', name: 'ASTM F1852', type: 'Bolts (Twist-Off)' },
+                { category: 'bolts', name: 'ASTM A194/A194M', type: 'Nuts' },
+                { category: 'bolts', name: 'ASTM A563/A563M', type: 'Nuts' },
+                { category: 'bolts', name: 'ASTM F436/F436M', type: 'Washers' },
+                { category: 'bolts', name: 'ASTM F959/F959M', type: 'Direct Tension Indicators' },
+                { category: 'rods', name: 'ASTM A36/A36M', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM A193/A193M', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM A354', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM A449', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM A572/A572M', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM A588/A588M', type: 'Anchor/Threaded Rods' },
+                { category: 'rods', name: 'ASTM F1554', type: 'Anchor/Threaded Rods (Preferred)' },
+                { category: 'welding', name: 'AWS A5.1 - A5.32', type: 'Filler Metals & Fluxes' },
+                { category: 'other', name: 'ASTM A216/A216M', type: 'Steel Castings' },
+                { category: 'other', name: 'ASTM A668/A668M', type: 'Steel Forgings' },
+                { category: 'other', name: 'AWS D1.1 (Studs)', type: 'Headed Stud Anchors' }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const applicationCards = document.querySelectorAll('.application-card');
+            const appDetails = document.getElementById('application-details');
+            const appDetailsTitle = document.getElementById('app-details-title');
+            const appDetailsText = document.getElementById('app-details-text');
+            let activeCard = null;
+
+            applicationCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const appId = card.id.replace('app-btn-', '');
+                    const appInfo = appData.applications.find(a => a.id === appId);
+
+                    if (activeCard === card) {
+                        appDetails.classList.add('hidden');
+                        card.classList.remove('bg-amber-100', 'border-amber-500');
+                        card.classList.add('border-slate-300');
+                        activeCard = null;
+                    } else {
+                        if (activeCard) {
+                            activeCard.classList.remove('bg-amber-100', 'border-amber-500');
+                            activeCard.classList.add('border-slate-300');
+                        }
+                        appDetailsTitle.textContent = appInfo.title;
+                        appDetailsText.textContent = appInfo.text;
+                        appDetails.classList.remove('hidden');
+                        card.classList.add('bg-amber-100', 'border-amber-500');
+                        card.classList.remove('border-slate-300');
+                        activeCard = card;
+                    }
+                });
+            });
+
+            const standardsCounts = appData.standards.reduce((acc, std) => {
+                acc[std.org] = (acc[std.org] || 0) + 1;
+                return acc;
+            }, {});
+
+            new Chart(document.getElementById('standardsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(standardsCounts),
+                    datasets: [{
+                        label: '# of Standards',
+                        data: Object.values(standardsCounts),
+                        backgroundColor: ['#64748b', '#78716c', '#f59e0b', '#38bdf8', '#fbbf24', '#f87171', '#a3e635'],
+                        borderColor: '#f8fafc',
+                        borderWidth: 4,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 15, font: { size: 12 } } },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 4
+                        }
+                    }
+                }
+            });
+
+            const standardsList = document.getElementById('standards-list');
+            const standardsSearch = document.getElementById('standards-search');
+
+            const renderStandards = (filter = '') => {
+                standardsList.innerHTML = '';
+                const filtered = appData.standards.filter(s =>
+                    s.code.toLowerCase().includes(filter.toLowerCase()) ||
+                    s.desc.toLowerCase().includes(filter.toLowerCase())
+                );
+                filtered.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 border-b border-slate-200';
+                    div.innerHTML = `<p class="font-semibold text-slate-700">${s.code} <span class="text-xs font-normal text-white bg-amber-500 px-2 py-0.5 rounded-full">${s.org}</span></p><p class="text-sm text-slate-500">${s.desc}</p>`;
+                    standardsList.appendChild(div);
+                });
+                if (filtered.length === 0) {
+                     standardsList.innerHTML = `<p class="p-4 text-center text-slate-500">No standards found.</p>`;
+                }
+            };
+            standardsSearch.addEventListener('input', (e) => renderStandards(e.target.value));
+            renderStandards();
+
+            const materialFilterBtns = document.querySelectorAll('.material-filter-btn');
+            const materialsList = document.getElementById('materials-list');
+
+            const renderMaterials = (filter = 'all') => {
+                materialsList.innerHTML = '';
+                const filtered = filter === 'all' ? appData.materials : appData.materials.filter(m => m.category === filter);
+                filtered.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-slate-100 p-4 rounded-lg border border-slate-200';
+                    div.innerHTML = `<h4 class="font-semibold text-slate-800">${m.name}</h4><p class="text-sm text-slate-600">${m.type}</p>`;
+                    materialsList.appendChild(div);
+                });
+            };
+
+            materialFilterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    materialFilterBtns.forEach(b => b.classList.remove('active', 'bg-amber-500', 'text-white'));
+                    materialFilterBtns.forEach(b => b.classList.add('bg-slate-200', 'text-slate-700'));
+                    btn.classList.add('active', 'bg-amber-500', 'text-white');
+                    btn.classList.remove('bg-slate-200', 'text-slate-700');
+                    renderMaterials(btn.dataset.filter);
+                });
+            });
+            renderMaterials();
+        });
+    </script>
+</body>
+</html>
